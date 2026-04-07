@@ -12,29 +12,57 @@ import elGR from 'date-fns/esm/locale/el/index.js'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
+interface IEvent extends Event {
+  id: number
+  gymnast: string
+  maxParticipants: number
+}
+
+// Set min/max times
+const minTime = new Date()
+minTime.setHours(10, 0, 0, 0) // 10:00 AM
+
+const maxTime = new Date()
+maxTime.setHours(23, 0, 0, 0) // 11:00 PM
+
 const App: FC = () => {
-  const [events, setEvents] = useState<Event[]>([
+  const [events, setEvents] = useState<IEvent[]>([
     {
-      title: 'Learn cool stuff',
+      id: 1,
+      title: 'Yoga',
+      gymnast: 'Alice',
+      maxParticipants: 10,
       start,
       end,
     },
   ])
 
   const onEventResize: withDragAndDropProps['onEventResize'] = data => {
-    const { start, end } = data
+    const event = data.event as IEvent;
+    const start = data.start instanceof Date ? data.start : new Date(data.start);
+    const end = data.end instanceof Date ? data.end : new Date(data.end);
 
-    setEvents(currentEvents => {
-      const firstEvent = {
-        start: new Date(start),
-        end: new Date(end),
-      }
-      return [...currentEvents, firstEvent]
-    })
+    setEvents((prevEvents) =>
+      prevEvents.map((e) =>
+        e.id === event.id
+          ? { ...e, start, end } // 👈 update only resized event
+          : e
+      )
+    )
   }
 
   const onEventDrop: withDragAndDropProps['onEventDrop'] = data => {
-    console.log(data)
+    const event = data.event as IEvent;
+    const start = data.start instanceof Date ? data.start : new Date(data.start);
+    const end = data.end instanceof Date ? data.end : new Date(data.end);
+
+    setEvents((prevEvents) =>
+      prevEvents.map((e) =>
+        e.id === event.id
+          ? { ...e, start, end } // 👈 update only resized event
+          : e
+      )
+    )
   }
 
   const DAYS_TO_SHOW = [1, 2, 3, 4, 5] // 0=Sunday, 6=Saturday
@@ -60,6 +88,11 @@ const App: FC = () => {
         }
         return {}
       }}
+      min={minTime}
+      max={maxTime}
+      components={{
+        event: CustomEvent, // 👈 our custom event layout
+      }}
     />
   )
 }
@@ -80,7 +113,24 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 })
+
+// Custom Event component
+const CustomEvent = ({ event }: any) => {
+  return (
+    <div style={{ padding: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontWeight: 'bold', fontSize: 16 }}>{event.title}</div>
+      <div style={{ fontSize: 14 }}>{event.gymnast}</div>
+      <div style={{ fontSize: 16, color: '#fff' }}>
+        Max: {event.maxParticipants}
+      </div>
+    </div>
+  )
+}
+
 //@ts-ignore
 const DnDCalendar = withDragAndDrop(Calendar)
+
+
+
 
 export default App
