@@ -10,7 +10,7 @@
 
 /* Remove the empty space above the time grid */
 .rbc-time-view .rbc-time-content {
-  /* border-top: none; */
+  border-top: none;
 }
 
 .rbc-label.rbc-time-header-gutter {
